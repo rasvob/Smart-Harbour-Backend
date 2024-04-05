@@ -18,6 +18,7 @@ RUN pdm install --check --prod --no-editable
 
 COPY .env.docker /src/.env
 COPY /certs /src/certs
+ENV PYTHONPATH=/src/app
 
 FROM builder as development
 EXPOSE 8010
