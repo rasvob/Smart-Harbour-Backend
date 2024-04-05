@@ -163,3 +163,4 @@ pdm_completion.sh
 venv/
 __pycache__/
 .pdm-python
+*.key

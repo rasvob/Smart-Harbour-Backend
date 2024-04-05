@@ -9,6 +9,7 @@ dependencies = [
     "fastapi>=0.110.1",
     "uvicorn[standard]>=0.29.0",
     "pydantic-settings>=2.2.1",
+    "sqlalchemy>=2.0.29",
 ]
 requires-python = "==3.11.*"
 readme = "README.md"
@@ -22,5 +23,5 @@ distribution = false
 start.cmd = "uvicorn app.main:app --reload"
 start.env_file = ".env"
 
-start-docker-dev.cmd = "uvicorn app.main:app --host 0.0.0.0 --port 8010 --reload --log-level debug --use-colors"
-start-docker-prod.cmd = "uvicorn app.main:app --host 0.0.0.0 --port 443 --log-level info"
+start-docker-dev.cmd = "uvicorn app.main:app --host 0.0.0.0 --port 8010 --ssl-keyfile /src/certs/server.key --ssl-certfile /src/certs/server.crt --reload --log-level debug --use-colors"
+start-docker-prod.cmd = "uvicorn app.main:app --host 0.0.0.0 --port 8010 --log-level info"

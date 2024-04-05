@@ -16,7 +16,6 @@ services:
       - DEBUG=1
     ports:
       - "8010:8010"
-      - "443:443"
     volumes:
       - ./data:/src/data
       - ./app:/src/app
