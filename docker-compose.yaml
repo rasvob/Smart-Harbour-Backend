@@ -1,0 +1,22 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+      tags:
+        - "harbour-api:1.0.0"
+    # If need to bash into container, uncomment the following line - then run `docker exec -it <container> /bin/bash`
+    # command: tail -f /dev/null
+    # restart: always
+    container_name: harbour-api
+    env_file:
+      - .env.docker
+    environment:
+      - DEBUG=1
+    ports:
+      - "8010:8010"
+      - "443:443"
+    volumes:
+      - ./data:/src/data
+      - ./app:/src/app
