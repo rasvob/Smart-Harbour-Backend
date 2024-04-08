@@ -19,3 +19,23 @@ services:
     volumes:
       - ./data:/src/data
       - ./app:/src/app
+    depends_on:
+      - db
+    
+  db:
+    image: postgres
+    restart: always
+    # set shared memory limit when using docker-compose
+    shm_size: '2gb'
+    # or set shared memory limit when deploy via swarm stack
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=petrov
+      - POSTGRES_USER=webapp
+      - POSTGRES_DB=webapp
+
+volumes:
+  pgdata:

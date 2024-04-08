@@ -1,14 +1,16 @@
 import logging
 from fastapi import FastAPI
-from app.app_log import AppLogger
-from app.config import AppConfig
-from app.routers import api_v1_router
+from app.core.app_config import app_config
+from app.core.app_logger import AppLogger
+from app.core.db import init_db, engine
+from app.routers.api_v1 import api_v1_router
 
-app_config = AppConfig()
-logger = AppLogger(__name__, logging._nameToLevel[app_config.log_level]).get_logger()
+logger = AppLogger(__name__, logging._nameToLevel[app_config.LOG_LEVEL]).get_logger()
+
 app = FastAPI()
 app.include_router(api_v1_router)
 
+init_db()
 
 @app.get("/")
 def read_root():
@@ -17,3 +19,7 @@ def read_root():
 @app.get("/health")
 def health_check():
     return {"Status": "Healthy"}
+
+@app.get("/settings")
+def settings():
+    return {"Settings": app_config}
