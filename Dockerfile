@@ -25,6 +25,7 @@ EXPOSE 8010
 CMD ["pdm", "run", "start-docker-dev"]
 
 FROM builder as production
+EXPOSE 8010
 COPY /app /src/app
 COPY .env.docker /src/.env
 CMD ["pdm", "run", "start-docker-prod"]
