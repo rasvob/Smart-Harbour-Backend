@@ -49,10 +49,10 @@ class StateBase(SQLModel):
 class State(StateBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     first_boat_pass_id: int | None = Field(default=None, foreign_key="boatpass.id")
-    # last_boat_pass_id: int | None = Field(default=None, foreign_key="boatpass.id")
+    last_boat_pass_id: int | None = Field(default=None)
     # first_boat_pass = Relationship(sa_relationship_kwargs={ 'foreign_keys': [first_boat_pass_id] })
     # last_boat_pass = Relationship(sa_relationship_kwargs={ 'foreign_keys': [last_boat_pass_id] })
-    boat_passes: list["BoatPass"] = Relationship(back_populates="state")
+    boat_passes: list["BoatPass"] = Relationship(back_populates="state", sa_relationship_kwargs={ 'foreign_keys': "[State.first_boat_pass_id]" })
 
 class BoatPassBase(SQLModel):
     camera_id: int
