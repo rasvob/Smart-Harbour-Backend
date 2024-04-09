@@ -24,5 +24,8 @@ class AppConfig(BaseSettings):
             port=self.POSTGRES_PORT,
             path=self.POSTGRES_DB,
         )
+    
+    ADMIN_PASSWORD: str
+    INIT_DB: bool = False
 
 app_config = AppConfig()
