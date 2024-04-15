@@ -1,0 +1,11 @@
+{
+    "users": [
+        {
+            "full_name": "Přístav Petrov",
+            "is_active": true,
+            "username": "petrov",
+            "role": "admin",
+            "password": "Petrov.2024"
+        }
+    ]
+}

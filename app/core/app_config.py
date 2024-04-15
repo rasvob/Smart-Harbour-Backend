@@ -1,3 +1,4 @@
+import secrets
 from typing import Literal
 from pydantic import Field, computed_field, PostgresDsn
 from pydantic_settings  import BaseSettings, SettingsConfigDict
@@ -25,7 +26,11 @@ class AppConfig(BaseSettings):
             path=self.POSTGRES_DB,
         )
     
-    ADMIN_PASSWORD: str
+    INIT_DB_FILE: str
     INIT_DB: bool = False
+    JWT_SECRET: str = secrets.token_urlsafe(32)
+    JWT_ALGORITHM: str = "HS256"
+    JWT_EXPIRATION: int = 20160
+
 
 app_config = AppConfig()

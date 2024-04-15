@@ -93,3 +93,10 @@ class OcrResult(OcrResultBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     bounding_box_id: int = Field(foreign_key="boundingbox.id")
     bounding_box: BoundingBox = Relationship(back_populates="ocr_results")
+
+class Token(SQLModel):
+    access_token: str
+    token_type: str = "bearer"
+
+class TokenPayload(SQLModel):
+    sub: int | None = None
