@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum
 from sqlmodel import Field, SQLModel, Relationship
-from typing import Optional
+from typing import Optional, List
 
 class RoleEnum(str, Enum):
     admin = "admin"
@@ -105,3 +105,20 @@ class Token(SQLModel):
 
 class TokenPayload(SQLModel):
     sub: int | None = None
+
+class OcrResultPublic(OcrResultBase):
+    id: int
+
+class BoundingBoxCreate(BoundingBoxBase):
+    ocr_results: List[OcrResultBase]
+
+class BoundingBoxPublic(BoundingBoxBase):
+    id: int
+    ocr_results: List[OcrResultPublic]
+
+class BoatPassCreate(BoatPassBase):
+    bounding_boxes: List[BoundingBoxCreate]
+
+class BoatPassPublic(BoatPassBase):
+    id: int
+    bounding_boxes: List[BoundingBoxPublic]
