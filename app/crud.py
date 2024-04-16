@@ -1,6 +1,17 @@
-from app.models import User, UserCreate
+from app.models import User, UserCreate, DbInitState
 from app.core.security import get_password_hash, verify_password
 from sqlmodel import Session, select
+
+def get_init_db_state(*, session: Session) -> DbInitState:
+    statement = select(DbInitState)
+    session_state = session.exec(statement).first()
+    return session_state
+
+def set_init_db_state(*, session: Session, state: DbInitState) -> DbInitState:
+    session.add(state)
+    session.commit()
+    session.refresh(state)
+    return state
 
 def create_user(*, session: Session, user_create: UserCreate) -> User:
     user = User.model_validate(user_create, update={"hashed_password": get_password_hash(user_create.password)})

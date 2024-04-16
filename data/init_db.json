@@ -1,11 +1,18 @@
 {
     "users": [
         {
-            "full_name": "Přístav Petrov",
+            "full_name": "Petrov - Machine",
             "is_active": true,
-            "username": "petrov",
+            "username": "petrovpc",
+            "role": "machine",
+            "password": "Petrov.Machine.2024"
+        },
+        {
+            "full_name": "Petrov - Admin",
+            "is_active": true,
+            "username": "petrovadmin",
             "role": "admin",
-            "password": "Petrov.2024"
+            "password": "Petrov.Admin.2024"
         }
     ]
 }

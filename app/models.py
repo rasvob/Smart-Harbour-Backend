@@ -6,6 +6,7 @@ from typing import Optional
 class RoleEnum(str, Enum):
     admin = "admin"
     regular = "regular"
+    machine = "machine"
 
 class BoatLengthEnum(str, Enum):
     pod_8m = "pod 8m"
@@ -93,6 +94,10 @@ class OcrResult(OcrResultBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     bounding_box_id: int = Field(foreign_key="boundingbox.id")
     bounding_box: BoundingBox = Relationship(back_populates="ocr_results")
+
+class DbInitState(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    state: bool = False
 
 class Token(SQLModel):
     access_token: str

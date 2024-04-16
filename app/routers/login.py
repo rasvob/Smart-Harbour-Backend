@@ -9,8 +9,8 @@ from sqlmodel import Session, select
 from app.core.app_logger import AppLogger
 from app.core.app_config import app_config
 from app.core.security import create_access_token
-from app.models import User, Token
-from app.routers.deps import SessionDep
+from app.models import User, Token, UserBase
+from app.routers.deps import SessionDep, TokenDep, CurrentUser
 import app.crud as crud
 
 logger = AppLogger(__name__, logging._nameToLevel[app_config.LOG_LEVEL]).get_logger()
@@ -34,7 +34,6 @@ async def login_access_token(session: SessionDep, form_data: Annotated[OAuth2Pas
     access_token = create_access_token(user.id)
     return Token(access_token=access_token)
 
-# TODO: Test token
-@login_router.post("/login/test-token")
-async def test_token(session: SessionDep, token: str) -> Any:
-    return {"token": token}
+@login_router.post("/login/current-user", response_model=UserBase)
+async def current_user(user: CurrentUser) -> UserBase:
+    return user
