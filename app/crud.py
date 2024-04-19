@@ -1,5 +1,5 @@
 from typing import List
-from app.models import User, UserCreate, DbInitState, BoatPass, BoatPassBase, BoundingBox, BoundingBoxBase, OcrResult, OcrResultBase, BoatPassCreate
+from app.models import User, UserCreate, DbInitState, BoatPass, BoatPassBase, BoundingBox, BoundingBoxBase, OcrResult, OcrResultBase, BoatPassCreate, State, StateBase
 from app.core.security import get_password_hash, verify_password
 from app.core.app_logger import AppLogger
 from app.core.app_config import app_config
@@ -86,3 +86,28 @@ def get_ocr_results_by_bounding_box_id(*, session: Session, bounding_box_id: int
     statement = select(OcrResult).where(OcrResult.bounding_box_id == bounding_box_id)
     session_ocr = session.exec(statement).all()
     return session_ocr
+
+def get_states(*, session: Session) -> List[State]:
+    statement = select(State)
+    session_states = session.exec(statement).all()
+    return session_states
+
+def create_state(*, session: Session, state: StateBase, first_boat_pass_id: int, last_boat_pass_id: int | None = None) -> State:
+    state_db = State.model_validate(state, update={"first_boat_pass_id": first_boat_pass_id, "last_boat_pass_id": last_boat_pass_id})
+    session.add(state_db)
+    session.commit()
+    session.refresh(state_db)
+    return state_db
+
+def get_state_by_id(*, session: Session, state_id: int) -> State | None:
+    statement = select(State).where(State.id == state_id)
+    session_state = session.exec(statement).first()
+    return session_state
+
+def update_state(*, session: Session, original_state: State, updated_state: State) -> State:
+    state_data = updated_state.model_dump(exclude_unset=True)
+    original_state.sqlmodel_update(state_data)
+    session.add(original_state)
+    session.commit()
+    session.refresh(original_state)
+    return original_state
