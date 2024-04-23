@@ -122,3 +122,6 @@ class BoatPassCreate(BoatPassBase):
 class BoatPassPublic(BoatPassBase):
     id: int
     bounding_boxes: List[BoundingBoxPublic]
+
+class ImagePayload(SQLModel):
+    image: str

@@ -12,7 +12,6 @@ logger = AppLogger(__name__, logging._nameToLevel[app_config.LOG_LEVEL]).get_log
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.debug('Starting app')
-    
     yield
     logger.debug('Shuting down app')
 

@@ -31,6 +31,7 @@ class AppConfig(BaseSettings):
     JWT_SECRET: str = secrets.token_urlsafe(32)
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRATION: int = 20160
+    DATA_FOLDER: str
 
 
 app_config = AppConfig()

@@ -19,6 +19,7 @@ services:
     volumes:
       - ./data:/src/data
       - ./app:/src/app
+      - ./init:/src/init
     depends_on:
       - db
     

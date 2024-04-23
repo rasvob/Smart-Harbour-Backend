@@ -164,3 +164,4 @@ venv/
 __pycache__/
 .pdm-python
 *.key
+data/*.jpeg

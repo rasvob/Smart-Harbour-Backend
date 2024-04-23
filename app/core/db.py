@@ -7,7 +7,7 @@ import logging
 import json
 
 logger = AppLogger(__name__, logging._nameToLevel[app_config.LOG_LEVEL]).get_logger()
-engine = create_engine(str(app_config.SQLALCHEMY_DATABASE_URI), echo=True)
+engine = create_engine(str(app_config.SQLALCHEMY_DATABASE_URI), echo=False)
 
 def prepare_data(session: Session) -> None:
     state = get_init_db_state(session=session)

@@ -1,0 +1,1 @@
+# Data folder for saving image files from API

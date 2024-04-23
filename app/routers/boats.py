@@ -7,7 +7,7 @@ from fastapi import FastAPI, HTTPException, APIRouter, Request, Depends
 from sqlmodel import Session, select
 from app.core.app_logger import AppLogger
 from app.core.app_config import app_config
-from app.models import OcrResult, State, StateBase, User, BoatPass, BoatPassCreate, BoatPassPublic, OcrResultPublic, PaymentStatusEnum, BoatLengthEnum, StateOfBoatEnum
+from app.models import OcrResult, State, StateBase, User, BoatPass, BoatPassCreate, BoatPassPublic, OcrResultPublic, PaymentStatusEnum, BoatLengthEnum, StateOfBoatEnum, ImagePayload
 from app import crud
 from app.routers.deps import SessionDep, TokenDep, CurrentUser, get_current_active_user
 
@@ -23,9 +23,19 @@ async def read_boat_passes(session: SessionDep) -> list[BoatPassPublic]:
     res_db = crud.get_all_boat_passes(session=session)
     return res_db
 
-@boat_router.post("/boat-pass",dependencies=[Depends(get_current_active_user)], response_model=BoatPass)
-async def create_boat_pass(session: SessionDep, boat_pass: BoatPassCreate) -> BoatPass:
-    return crud.create_boat_pass(session=session, boat_pass=boat_pass)
+@boat_router.post("/boat-pass",dependencies=[Depends(get_current_active_user)], response_model=BoatPassPublic)
+async def create_boat_pass(session: SessionDep, boat_pass: BoatPassCreate, image_data: ImagePayload) -> BoatPassPublic:
+    res = crud.create_boat_pass(session=session, boat_pass=boat_pass)
+    image_path = os.path.join(app_config.DATA_FOLDER, res.image_filename)
+    try:
+        # logger.debug(f"Saving image: {image_data.image}")
+        img_data = base64.b64decode(image_data.image)
+        with open(image_path, "wb") as new_file:
+            new_file.write(img_data)
+    except Exception as e:
+        logger.error(f"Error while saving image: {e}")
+        logger.error(f"Image data: {image_data.image[:20]}, ..., {image_data.image[-20:]}")
+    return res
 
 # TODO: Just for debugging purposes, remove this endpoint
 @boat_router.post("/boat-pass-state", response_model=BoatPassPublic)
