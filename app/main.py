@@ -1,5 +1,6 @@
 import logging
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.core.app_config import app_config
 from app.core.app_logger import AppLogger
@@ -18,6 +19,22 @@ async def lifespan(app: FastAPI):
 init_db(app_config.INIT_DB)
 
 app = FastAPI()
+
+origins = [
+    "http://localhost",
+    "https://localhost",
+    "http://localhost:4000",
+    "https://localhost:4000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(boat_router)
 app.include_router(login_router)
 

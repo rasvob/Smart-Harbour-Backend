@@ -27,9 +27,9 @@ async def login_access_token(session: SessionDep, form_data: Annotated[OAuth2Pas
     )
 
     if not user:
-        raise HTTPException(status_code=400, detail="Incorrect email or password")
+        raise HTTPException(status_code=400, detail="Nesprávné uživatelské jméno nebo heslo")
     elif not user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise HTTPException(status_code=400, detail="Neaktivní uživatel")
     
     access_token = create_access_token(user.id)
     return Token(access_token=access_token)
