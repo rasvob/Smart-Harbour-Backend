@@ -92,7 +92,7 @@ def get_states(*, session: Session) -> List[State]:
     session_states = session.exec(statement).all()
     return session_states
 
-def create_state(*, session: Session, state: StateBase, first_boat_pass_id: int, last_boat_pass_id: int | None = None) -> State:
+def create_state(*, session: Session, state: StateBase, first_boat_pass_id: int | None = None, last_boat_pass_id: int | None = None) -> State:
     state_db = State.model_validate(state, update={"first_boat_pass_id": first_boat_pass_id, "last_boat_pass_id": last_boat_pass_id})
     session.add(state_db)
     session.commit()

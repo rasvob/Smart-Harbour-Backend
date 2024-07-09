@@ -54,6 +54,10 @@ async def create_boat_pass_state(session: SessionDep, boat_pass: BoatPassCreate)
     
     return boat_pass_res
 
+@boat_router.post('/state', dependencies=[Depends(get_current_active_user)], response_model=State)
+async def create_state(session: SessionDep, state: StateBase) -> State:
+    return crud.create_state(session=session, state=state)
+
 @boat_router.get("/ocr-results", dependencies=[Depends(get_current_active_user)], response_model=list[OcrResult])
 async def ocr_results(session: SessionDep) -> list[OcrResult]:
     return crud.get_all_ocr_results(session=session)
