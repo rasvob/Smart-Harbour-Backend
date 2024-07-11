@@ -125,3 +125,21 @@ class BoatPassPublic(BoatPassBase):
 
 class ImagePayload(SQLModel):
     image: str
+
+class StateUpdate(SQLModel):
+    id: int
+    arrival_time: datetime | None = None
+    departure_time: datetime | None = None
+    best_detected_identifier: str | None = None
+    payment_status: PaymentStatusEnum | None = None
+    best_detected_boat_length: BoatLengthEnum | None = None
+
+class DashboardData(SQLModel):
+    today_arrived: int
+    today_departed: int
+    today_in_marina: int
+    today_arrived_undetected_identifier: int
+    today_departed_undetected_identifier: int
+    today_in_marina_undetected_identifier: int
+    today_payed:int
+    today_not_payed:int

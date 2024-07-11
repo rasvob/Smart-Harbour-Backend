@@ -1,5 +1,8 @@
+from datetime import datetime, timedelta, tzinfo, UTC
 from typing import List
-from app.models import User, UserCreate, DbInitState, BoatPass, BoatPassBase, BoundingBox, BoundingBoxBase, OcrResult, OcrResultBase, BoatPassCreate, State, StateBase
+
+from sqlalchemy import func, column
+from app.models import PaymentStatusEnum, StateUpdate, User, UserCreate, DbInitState, BoatPass, BoatPassBase, BoundingBox, BoundingBoxBase, OcrResult, OcrResultBase, BoatPassCreate, State, StateBase, DashboardData
 from app.core.security import get_password_hash, verify_password
 from app.core.app_logger import AppLogger
 from app.core.app_config import app_config
@@ -88,7 +91,7 @@ def get_ocr_results_by_bounding_box_id(*, session: Session, bounding_box_id: int
     return session_ocr
 
 def get_states(*, session: Session) -> List[State]:
-    statement = select(State)
+    statement = select(State).order_by(State.id.desc())
     session_states = session.exec(statement).all()
     return session_states
 
@@ -104,10 +107,64 @@ def get_state_by_id(*, session: Session, state_id: int) -> State | None:
     session_state = session.exec(statement).first()
     return session_state
 
-def update_state(*, session: Session, original_state: State, updated_state: State) -> State:
+def update_state_payment(*, session: Session, update_state: StateUpdate) -> State:
+    state = get_state_by_id(session=session, state_id=update_state.id)
+    state.payment_status = update_state.payment_status
+    session.add(state)
+    session.commit()
+    session.refresh(state)
+    return state
+
+def update_state_best_detected_identifier(*, session: Session, update_state: StateUpdate) -> State:
+    state = get_state_by_id(session=session, state_id=update_state.id)
+    state.best_detected_identifier = update_state.best_detected_identifier
+    session.add(state)
+    session.commit()
+    session.refresh(state)
+    return state
+
+def update_state_raw(*, session: Session, original_state: State, updated_state: State) -> State:
     state_data = updated_state.model_dump(exclude_unset=True)
     original_state.sqlmodel_update(state_data)
     session.add(original_state)
     session.commit()
     session.refresh(original_state)
     return original_state
+
+def update_state(*, session: Session, updated_state: State) -> State:
+    original_state = get_state_by_id(session=session, state_id=updated_state.id)
+    return update_state_raw(session=session, original_state=original_state, updated_state=updated_state)
+
+def get_dashboard_data(*, session: Session) -> DashboardData:
+    statement_today_arrived = select(func.count(State.id)).where(State.arrival_time + timedelta(days=1) > datetime.now(UTC))
+    count_of_today_arrived = session.exec(statement_today_arrived).one()
+    statement_today_arrived_undetected_identifier = select(func.count(State.id)).where(State.arrival_time + timedelta(days=1) > datetime.now(UTC)).where(column("best_detected_identifier").contains('?'))
+    count_of_today_arrived_undetected_identifier = session.exec(statement_today_arrived_undetected_identifier).one()
+
+    statement_today_departed = select(func.count(State.id)).where(State.departure_time + timedelta(days=1) > datetime.now(UTC))
+    count_of_today_departed = session.exec(statement_today_departed).one()
+    statement_today_departed_undetected_identifier= select(func.count(State.id)).where(State.departure_time + timedelta(days=1) > datetime.now(UTC)).where(column("best_detected_identifier").contains('?'))
+    count_of_today_departed_undetected_identifier = session.exec(statement_today_departed_undetected_identifier).one()
+
+    statement_today_in_marina = select(func.count(State.id)).where(State.arrival_time + timedelta(days=1) > datetime.now(UTC)).where(State.departure_time == None)
+    count_of_today_in_marina = session.exec(statement_today_in_marina).one()
+    statement_today_in_marina_undetected_identifier= select(func.count(State.id)).where(State.arrival_time + timedelta(days=1) > datetime.now(UTC)).where(State.departure_time == None).where(column("best_detected_identifier").contains('?'))
+    count_of_today_in_marina_undetected_identifier = session.exec(statement_today_in_marina_undetected_identifier).one()
+
+    statement_today_payed = select(func.count(State.id)).where(State.arrival_time + timedelta(days=1) > datetime.now(UTC)).where(State.payment_status == PaymentStatusEnum.zaplaceno)
+    count_of_today_payed = session.exec(statement_today_payed).one()
+
+    statement_today_nonpayed = select(func.count(State.id)).where(State.arrival_time + timedelta(days=1) > datetime.now(UTC)).where(State.payment_status == PaymentStatusEnum.nezaplaceno)
+    count_of_today_nonpayed = session.exec(statement_today_nonpayed).one()
+    return DashboardData(
+        today_arrived=count_of_today_arrived, 
+        today_departed=count_of_today_departed, 
+        today_in_marina=count_of_today_in_marina, 
+        today_payed=count_of_today_payed, 
+        today_not_payed=count_of_today_nonpayed,
+        today_arrived_undetected_identifier=count_of_today_arrived_undetected_identifier,
+        today_departed_undetected_identifier=count_of_today_departed_undetected_identifier,
+        today_in_marina_undetected_identifier=count_of_today_in_marina_undetected_identifier
+        )
+
+    

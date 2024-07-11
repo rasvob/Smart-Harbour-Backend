@@ -7,7 +7,7 @@ from fastapi import FastAPI, HTTPException, APIRouter, Request, Depends
 from sqlmodel import Session, select
 from app.core.app_logger import AppLogger
 from app.core.app_config import app_config
-from app.models import OcrResult, State, StateBase, User, BoatPass, BoatPassCreate, BoatPassPublic, OcrResultPublic, PaymentStatusEnum, BoatLengthEnum, StateOfBoatEnum, ImagePayload
+from app.models import DashboardData, OcrResult, State, StateBase, StateUpdate, User, BoatPass, BoatPassCreate, BoatPassPublic, OcrResultPublic, PaymentStatusEnum, BoatLengthEnum, StateOfBoatEnum, ImagePayload
 from app import crud
 from app.routers.deps import SessionDep, TokenDep, CurrentUser, get_current_active_user
 
@@ -22,6 +22,10 @@ boat_router = APIRouter(
 async def read_boat_passes(session: SessionDep) -> list[BoatPassPublic]:
     res_db = crud.get_all_boat_passes(session=session)
     return res_db
+
+@boat_router.get("/dashboard", dependencies=[Depends(get_current_active_user)], response_model=DashboardData)
+async def dashboard(session: SessionDep) -> DashboardData:
+    return crud.get_dashboard_data(session=session)
 
 @boat_router.post("/boat-pass",dependencies=[Depends(get_current_active_user)], response_model=BoatPassPublic)
 async def create_boat_pass(session: SessionDep, boat_pass: BoatPassCreate, image_data: ImagePayload) -> BoatPassPublic:
@@ -56,7 +60,20 @@ async def create_boat_pass_state(session: SessionDep, boat_pass: BoatPassCreate)
 
 @boat_router.post('/state', dependencies=[Depends(get_current_active_user)], response_model=State)
 async def create_state(session: SessionDep, state: StateBase) -> State:
+    logger.debug(f"Creating state: {state}")
     return crud.create_state(session=session, state=state)
+
+@boat_router.put('/state', dependencies=[Depends(get_current_active_user)], response_model=State)
+async def update_state_full(session: SessionDep, update_stated: StateUpdate) -> State:
+    return crud.update_state(session=session, updated_state=update_stated)
+
+@boat_router.patch('/state/payment', dependencies=[Depends(get_current_active_user)], response_model=State)
+async def update_state_payment(session: SessionDep, update_state: StateUpdate) -> State:
+    return crud.update_state_payment(session=session, update_state=update_state)
+
+@boat_router.patch('/state/identifier', dependencies=[Depends(get_current_active_user)], response_model=State)
+async def update_state_best_detected_identifier(session: SessionDep, update_state: StateUpdate) -> State:
+    return crud.update_state_best_detected_identifier(session=session, update_state=update_state)
 
 @boat_router.get("/ocr-results", dependencies=[Depends(get_current_active_user)], response_model=list[OcrResult])
 async def ocr_results(session: SessionDep) -> list[OcrResult]:
