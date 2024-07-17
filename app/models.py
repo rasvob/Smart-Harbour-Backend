@@ -143,3 +143,11 @@ class DashboardData(SQLModel):
     today_in_marina_undetected_identifier: int
     today_payed:int
     today_not_payed:int
+
+class ImageModel(SQLModel):
+    camera_id: int
+    image: str
+
+class WebsocketImageData(SQLModel):
+    type: str = "image"
+    data: ImageModel

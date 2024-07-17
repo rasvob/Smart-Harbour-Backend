@@ -7,9 +7,9 @@ from fastapi import FastAPI, HTTPException, APIRouter, Request, Depends
 from sqlmodel import Session, select
 from app.core.app_logger import AppLogger
 from app.core.app_config import app_config
-from app.models import DashboardData, OcrResult, State, StateBase, StateUpdate, User, BoatPass, BoatPassCreate, BoatPassPublic, OcrResultPublic, PaymentStatusEnum, BoatLengthEnum, StateOfBoatEnum, ImagePayload
+from app.models import DashboardData, ImageModel, OcrResult, State, StateBase, StateUpdate, User, BoatPass, BoatPassCreate, BoatPassPublic, OcrResultPublic, PaymentStatusEnum, BoatLengthEnum, StateOfBoatEnum, ImagePayload, WebsocketImageData
 from app import crud
-from app.routers.deps import SessionDep, TokenDep, CurrentUser, get_current_active_user
+from app.routers.deps import ConnectionManagerDep, SessionDep, TokenDep, CurrentUser, get_current_active_user
 
 logger = AppLogger(__name__, logging._nameToLevel[app_config.LOG_LEVEL]).get_logger()
 boat_router = APIRouter(
@@ -82,3 +82,8 @@ async def ocr_results(session: SessionDep) -> list[OcrResult]:
 @boat_router.get("/states", dependencies=[Depends(get_current_active_user)], response_model=list[State])
 async def get_all_states(session: SessionDep) -> list[State]:
     return crud.get_states(session=session)
+
+@boat_router.post("/preview", dependencies=[Depends(get_current_active_user)], response_model=WebsocketImageData)
+async def broadcast_preview(image: ImageModel, manager: ConnectionManagerDep) -> WebsocketImageData:
+    await manager.broadcast(WebsocketImageData(data=image))
+    return {"status": "ok"}
