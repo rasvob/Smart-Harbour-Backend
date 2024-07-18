@@ -4,6 +4,7 @@ import logging
 import base64
 from typing import Any, List
 from fastapi import FastAPI, HTTPException, APIRouter, Request, Depends
+from fastapi.encoders import jsonable_encoder
 from sqlmodel import Session, select
 from app.core.app_logger import AppLogger
 from app.core.app_config import app_config
@@ -83,7 +84,8 @@ async def ocr_results(session: SessionDep) -> list[OcrResult]:
 async def get_all_states(session: SessionDep) -> list[State]:
     return crud.get_states(session=session)
 
-@boat_router.post("/preview", dependencies=[Depends(get_current_active_user)], response_model=WebsocketImageData)
-async def broadcast_preview(image: ImageModel, manager: ConnectionManagerDep) -> WebsocketImageData:
-    await manager.broadcast(WebsocketImageData(data=image))
+@boat_router.post("/preview", dependencies=[Depends(get_current_active_user)], response_model=Any)
+async def broadcast_preview(image: ImageModel, manager: ConnectionManagerDep) -> Any:
+    await manager.broadcast(jsonable_encoder(WebsocketImageData(camera_id=image.camera_id, image=image.image)))
+    # await manager.broadcast({'data': 'here'})
     return {"status": "ok"}

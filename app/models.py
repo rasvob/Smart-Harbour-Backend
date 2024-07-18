@@ -150,4 +150,5 @@ class ImageModel(SQLModel):
 
 class WebsocketImageData(SQLModel):
     type: str = "image"
-    data: ImageModel
+    camera_id: int
+    image: str
