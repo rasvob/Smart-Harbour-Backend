@@ -27,6 +27,7 @@ origins = [
     "https://localhost",
     "http://localhost:4000",
     "https://localhost:4000",
+    "https://smartharbour.vsb.cz",
 ]
 
 app.add_middleware(
@@ -48,6 +49,7 @@ def read_root():
 def health_check():
     return {"Status": "Healthy"}
 
+# TODO: Send cached data to the client
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket, session: SessionDep, manager: ConnectionManagerDep):
     await manager.connect(websocket)
