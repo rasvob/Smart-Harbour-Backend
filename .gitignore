@@ -165,3 +165,7 @@ __pycache__/
 .pdm-python
 *.key
 data/*.jpeg
+serverkey.pem
+serverreq.pem
+servercert.pem
+server-req.cfg

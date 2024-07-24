@@ -3,17 +3,17 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: development
+      target: production
       tags:
         - "harbour-api:1.0.0"
     # If need to bash into container, uncomment the following line - then run `docker exec -it <container> /bin/bash`
     # command: tail -f /dev/null
-    # restart: always
+    restart: always
     container_name: harbour-api
     env_file:
       - .env.docker
     environment:
-      - DEBUG=1
+      - DEBUG=0
     ports:
       - "8010:8010"
     volumes:
@@ -23,6 +23,20 @@ services:
     depends_on:
       - db
     
+  nginx:
+    image: nginx:alpine
+    container_name: harbour-nginx
+    restart: always
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - ./certs/cesnet:/etc/ssl
+      - ./dist:/var/www/html
+    depends_on:
+      - app
+
   db:
     image: postgres
     restart: always
