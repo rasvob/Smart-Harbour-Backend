@@ -32,6 +32,8 @@ class AppConfig(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRATION: int = 20160
     DATA_FOLDER: str
+    WS_CAM_PREVIEW_1:str
+    WS_CAM_PREVIEW_2:str
 
 
 app_config = AppConfig()

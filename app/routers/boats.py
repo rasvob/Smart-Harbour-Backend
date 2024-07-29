@@ -87,5 +87,9 @@ async def get_all_states(session: SessionDep) -> list[State]:
 @boat_router.post("/preview", dependencies=[Depends(get_current_active_user)], response_model=Any)
 async def broadcast_preview(image: ImageModel, manager: ConnectionManagerDep) -> Any:
     await manager.broadcast(jsonable_encoder(WebsocketImageData(camera_id=image.camera_id, image=image.image)))
+    img_path = os.path.join(app_config.DATA_FOLDER, app_config.WS_CAM_PREVIEW_1 if image.camera_id == 1 else app_config.WS_CAM_PREVIEW_2)
+    with open(img_path, "w") as new_file:
+        new_file.write(image.image)
+
     # await manager.broadcast({'data': 'here'})
     return {"status": "ok"}

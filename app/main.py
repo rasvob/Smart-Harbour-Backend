@@ -1,4 +1,6 @@
 import logging
+import os
+from app.models import WebsocketImageData
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -9,6 +11,7 @@ from app.core.db import init_db, engine
 from app.routers.boats import boat_router
 from app.routers.login import login_router
 from app.routers.deps import ConnectionManagerDep, get_current_user, SessionDep, TokenDep
+from fastapi.encoders import jsonable_encoder
 
 logger = AppLogger(__name__, logging._nameToLevel[app_config.LOG_LEVEL]).get_logger()
 
@@ -20,7 +23,9 @@ async def lifespan(app: FastAPI):
 
 init_db(app_config.INIT_DB)
 
-app = FastAPI()
+# app = FastAPI()
+
+app = FastAPI(docs_url='/api/v1/docs', redoc_url='/api/v1/redoc', openapi_url='/api/v1/openapi.json')
 
 origins = [
     "http://localhost",
@@ -61,6 +66,15 @@ async def websocket_endpoint(websocket: WebSocket, session: SessionDep, manager:
                 token_d = TokenDep(data['token'])[7:]
                 try:
                     user = get_current_user(session=session, token=token_d)
+                    for i, x in enumerate([app_config.WS_CAM_PREVIEW_1, app_config.WS_CAM_PREVIEW_2]):
+                        img_path = os.path.join(app_config.DATA_FOLDER, x)
+
+                        if not os.path.exists(img_path):
+                            continue
+
+                        with open(img_path, "r") as img_file:
+                            img_data = img_file.read()
+                        await manager.broadcast(jsonable_encoder(WebsocketImageData(camera_id=i+1, image=img_data)))
                 except HTTPException as e:
                     await websocket.send_json({'type': 'error', 'message': str(e.detail)})
                     raise WebSocketDisconnect()
