@@ -169,5 +169,4 @@ serverkey.pem
 serverreq.pem
 servercert.pem
 server-req.cfg
-camera_preview_1.base64
-camera_preview_2.base64
+*.base64
