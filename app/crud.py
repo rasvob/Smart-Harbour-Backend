@@ -6,7 +6,7 @@ from app.models import PaymentStatusEnum, StateUpdate, User, UserCreate, DbInitS
 from app.core.security import get_password_hash, verify_password
 from app.core.app_logger import AppLogger
 from app.core.app_config import app_config
-from sqlmodel import Session, select
+from sqlmodel import Session, select, SQLModel
 import logging
 
 logger = AppLogger(__name__, logging._nameToLevel[app_config.LOG_LEVEL]).get_logger()
@@ -21,6 +21,12 @@ def set_init_db_state(*, session: Session, state: DbInitState) -> DbInitState:
     session.commit()
     session.refresh(state)
     return state
+
+def update_instance(session: Session, instance: SQLModel) -> SQLModel:
+    session.add(instance)
+    session.commit()
+    session.refresh(instance)
+    return instance
 
 def create_user(*, session: Session, user_create: UserCreate) -> User:
     user = User.model_validate(user_create, update={"hashed_password": get_password_hash(user_create.password)})
@@ -75,6 +81,11 @@ def get_all_boat_passes(*, session: Session) -> List[BoatPass]:
     session_boat_passes = session.exec(statement).all()
     return session_boat_passes
 
+def get_last_n_boat_passes_for_timestamp(*, session: Session, timestamp: datetime, n: int) -> List[BoatPass]:
+    statement = select(BoatPass).where(BoatPass.timestamp < timestamp).order_by(BoatPass.timestamp.desc()).limit(n)
+    session_boat_passes = session.exec(statement).all()
+    return session_boat_passes
+
 def get_bounding_boxes_by_boat_pass_id(*, session: Session, boat_pass_id: int) -> List[BoundingBox]:
     statement = select(BoundingBox).where(BoundingBox.boat_pass_id == boat_pass_id)
     session_boxes = session.exec(statement).all()
@@ -95,8 +106,8 @@ def get_states(*, session: Session) -> List[State]:
     session_states = session.exec(statement).all()
     return session_states
 
-def create_state(*, session: Session, state: StateBase, first_boat_pass_id: int | None = None, last_boat_pass_id: int | None = None) -> State:
-    state_db = State.model_validate(state, update={"first_boat_pass_id": first_boat_pass_id, "last_boat_pass_id": last_boat_pass_id})
+def create_state(*, session: Session, state: StateBase) -> State:
+    state_db = State.model_validate(state, update={"boat_passes": []})
     session.add(state_db)
     session.commit()
     session.refresh(state_db)

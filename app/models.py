@@ -49,11 +49,7 @@ class StateBase(SQLModel):
 
 class State(StateBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    first_boat_pass_id: int | None = Field(default=None, foreign_key="boatpass.id")
-    last_boat_pass_id: int | None = Field(default=None)
-    # first_boat_pass = Relationship(sa_relationship_kwargs={ 'foreign_keys': [first_boat_pass_id] })
-    # last_boat_pass = Relationship(sa_relationship_kwargs={ 'foreign_keys': [last_boat_pass_id] })
-    boat_passes: list["BoatPass"] = Relationship(back_populates="state", sa_relationship_kwargs={ 'foreign_keys': "[State.first_boat_pass_id]" })
+    boat_passes: list["BoatPass"] = Relationship(back_populates="state")
 
 class BoatPassBase(SQLModel):
     camera_id: int
@@ -65,6 +61,7 @@ class BoatPassBase(SQLModel):
 
 class BoatPass(BoatPassBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
+    state_id: int | None = Field(default=None, foreign_key="state.id")
     state: State | None = Relationship(back_populates="boat_passes")
     bounding_boxes: list["BoundingBox"] = Relationship(back_populates="boat_pass")
 
