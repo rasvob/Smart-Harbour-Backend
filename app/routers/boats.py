@@ -11,6 +11,7 @@ from app.core.app_config import app_config
 from app.models import DashboardData, ImageModel, OcrResult, State, StateBase, StateUpdate, User, BoatPass, BoatPassCreate, BoatPassPublic, OcrResultPublic, PaymentStatusEnum, BoatLengthEnum, StateOfBoatEnum, ImagePayload, WebsocketImageData
 from app import crud
 from app.routers.deps import ConnectionManagerDep, SessionDep, TokenDep, CurrentUser, get_current_active_user
+from app import boat_state_controller
 
 logger = AppLogger(__name__, logging._nameToLevel[app_config.LOG_LEVEL]).get_logger()
 boat_router = APIRouter(
@@ -30,8 +31,8 @@ async def dashboard(session: SessionDep) -> DashboardData:
 
 @boat_router.post("/boat-pass",dependencies=[Depends(get_current_active_user)], response_model=BoatPassPublic)
 async def create_boat_pass(session: SessionDep, boat_pass: BoatPassCreate, image_data: ImagePayload) -> BoatPassPublic:
-    res = crud.create_boat_pass(session=session, boat_pass=boat_pass)
-    image_path = os.path.join(app_config.DATA_FOLDER, res.image_filename)
+    boat_pass_res = crud.create_boat_pass(session=session, boat_pass=boat_pass)
+    image_path = os.path.join(app_config.DATA_FOLDER, boat_pass_res.image_filename)
     try:
         # logger.debug(f"Saving image: {image_data.image}")
         img_data = base64.b64decode(image_data.image)
@@ -40,7 +41,9 @@ async def create_boat_pass(session: SessionDep, boat_pass: BoatPassCreate, image
     except Exception as e:
         logger.error(f"Error while saving image: {e}")
         logger.error(f"Image data: {image_data.image[:20]}, ..., {image_data.image[-20:]}")
-    return res
+
+    boat_pass_res = boat_state_controller.manage_state_for_boat_pass(boat_pass_res, session)
+    return boat_pass_res
 
 # TODO: Just for debugging purposes, remove this endpoint
 @boat_router.post("/boat-pass-state", response_model=BoatPassPublic)
@@ -54,7 +57,7 @@ async def create_boat_pass_state(session: SessionDep, boat_pass: BoatPassCreate)
                       payment_status=PaymentStatusEnum.nezaplaceno, 
                       time_in_marina=15, 
                       state_of_boat=StateOfBoatEnum.prujezd)
-    crud.create_state(session=session, state=state, first_boat_pass_id=boat_pass_res.id, last_boat_pass_id=None)
+    crud.create_state(session=session, state=state)
     logger.debug(f"Created state: {state}")
     
     return boat_pass_res
