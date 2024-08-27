@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, tzinfo, UTC
 from typing import List
 
 from sqlalchemy import func, column
-from app.models import PaymentStatusEnum, StateUpdate, User, UserCreate, DbInitState, BoatPass, BoatPassBase, BoundingBox, BoundingBoxBase, OcrResult, OcrResultBase, BoatPassCreate, State, StateBase, DashboardData
+from app.models import PaymentStatusEnum, StateUpdate, User, UserCreate, DbInitState, BoatPass, BoatPassBase, BoundingBox, BoundingBoxBase, OcrResult, OcrResultBase, BoatPassCreate, State, StateBase, DashboardData, StateOfBoatEnum
 from app.core.security import get_password_hash, verify_password
 from app.core.app_logger import AppLogger
 from app.core.app_config import app_config
@@ -27,6 +27,10 @@ def update_instance(session: Session, instance: SQLModel) -> SQLModel:
     session.commit()
     session.refresh(instance)
     return instance
+
+def delete_instance(session: Session, instance: SQLModel) -> None:
+    session.delete(instance)
+    session.commit()
 
 def create_user(*, session: Session, user_create: UserCreate) -> User:
     user = User.model_validate(user_create, update={"hashed_password": get_password_hash(user_create.password)})
@@ -86,6 +90,11 @@ def get_last_n_boat_passes_for_timestamp(*, session: Session, timestamp: datetim
     session_boat_passes = session.exec(statement).all()
     return session_boat_passes
 
+def get_recent_boat_passes(*, session: Session, timestamp: datetime, timedelta: timedelta) -> List[BoatPass]:
+    statement = select(BoatPass).where(BoatPass.timestamp < timestamp).where(BoatPass.timestamp > timestamp - timedelta).order_by(BoatPass.timestamp.desc())
+    session_boat_passes = session.exec(statement).all()
+    return session_boat_passes
+
 def get_bounding_boxes_by_boat_pass_id(*, session: Session, boat_pass_id: int) -> List[BoundingBox]:
     statement = select(BoundingBox).where(BoundingBox.boat_pass_id == boat_pass_id)
     session_boxes = session.exec(statement).all()
@@ -117,6 +126,11 @@ def get_state_by_id(*, session: Session, state_id: int) -> State | None:
     statement = select(State).where(State.id == state_id)
     session_state = session.exec(statement).first()
     return session_state
+
+def get_states_in_harbour(*, session: Session) -> List[State]:
+    statement = select(State).where(State.state_of_boat == StateOfBoatEnum.kotvi)
+    session_states = session.exec(statement).all()
+    return session_states
 
 def update_state_payment(*, session: Session, update_state: StateUpdate) -> State:
     state = get_state_by_id(session=session, state_id=update_state.id)

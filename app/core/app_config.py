@@ -34,6 +34,8 @@ class AppConfig(BaseSettings):
     DATA_FOLDER: str
     WS_CAM_PREVIEW_1:str
     WS_CAM_PREVIEW_2:str
+    BOAT_PASS_TIMEDELTA_SECONDS: int = 30
+    MAX_GAP_BETWEEN_CONTINOUES_BOUNDING_BOXES: int = 50
 
 
 app_config = AppConfig()

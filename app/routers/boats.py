@@ -42,7 +42,7 @@ async def create_boat_pass(session: SessionDep, boat_pass: BoatPassCreate, image
         logger.error(f"Error while saving image: {e}")
         logger.error(f"Image data: {image_data.image[:20]}, ..., {image_data.image[-20:]}")
 
-    boat_pass_res = boat_state_controller.manage_state_for_boat_pass(boat_pass_res, session)
+    boat_pass_res = boat_state_controller.manage_boat_pass_state_assignment(boat_pass_res, session)
     return boat_pass_res
 
 # TODO: Just for debugging purposes, remove this endpoint
