@@ -90,8 +90,8 @@ def get_last_n_boat_passes_for_timestamp(*, session: Session, timestamp: datetim
     session_boat_passes = session.exec(statement).all()
     return session_boat_passes
 
-def get_recent_boat_passes(*, session: Session, timestamp: datetime, timedelta: timedelta) -> List[BoatPass]:
-    statement = select(BoatPass).where(BoatPass.timestamp < timestamp).where(BoatPass.timestamp > timestamp - timedelta).order_by(BoatPass.timestamp.desc())
+def get_recent_boat_passes(*, session: Session, timestamp: datetime, timedelta: timedelta, camera_id: int) -> List[BoatPass]:
+    statement = select(BoatPass).where(BoatPass.camera_id == camera_id).where(BoatPass.timestamp < timestamp).where(BoatPass.timestamp > timestamp - timedelta).order_by(BoatPass.timestamp.desc())
     session_boat_passes = session.exec(statement).all()
     return session_boat_passes
 
