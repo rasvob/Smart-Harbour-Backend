@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: production
+      target: development
       tags:
         - "harbour-api:1.0.0"
     # If need to bash into container, uncomment the following line - then run `docker exec -it <container> /bin/bash`
@@ -12,6 +12,8 @@ services:
     container_name: harbour-api
     env_file:
       - .env.docker
+    networks:
+      - rtx-net
     environment:
       - DEBUG=0
     ports:
@@ -27,6 +29,8 @@ services:
     image: nginx:alpine
     container_name: harbour-nginx
     restart: always
+    networks:
+      - rtx-net
     ports:
       - "443:443"
       - "80:80"
@@ -42,9 +46,11 @@ services:
     restart: always
     # set shared memory limit when using docker-compose
     shm_size: '2gb'
-    # or set shared memory limit when deploy via swarm stack
+    # or set shared memory limit when deploy via swarm stack        backend_pgdatatestvideo
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - backend_pgdatatestday0831_exp1209:/var/lib/postgresql/data
+    networks:
+      - rtx-net
     # ports:
     #   - "5432:5432"
     environment:
@@ -53,4 +59,10 @@ services:
       - POSTGRES_DB=webapp
 
 volumes:
-  pgdata:
+  backend_pgdatatestday0831_exp1209:
+
+networks:
+  rtx-net:
+    name: rtx-net
+    driver: bridge
+    external: true
